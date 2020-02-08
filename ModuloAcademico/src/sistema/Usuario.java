@@ -78,8 +78,7 @@ public abstract class Usuario {
 			confirmaSenha = entrada.nextLine();
 			if(senha.equals(confirmaSenha)) {
 				break;
-			}
-			System.out.println("\nSenha incorreta!");
+			} System.out.println("\nSenha incorreta!");
 		}
 		System.out.println("\nBem vindo ao Modulo Academico! Agora informe os seguintes dados:");
 		System.out.print("\nNome completo: ");
@@ -97,8 +96,7 @@ public abstract class Usuario {
 					System.out.println("\nVoce nao digitou os 11 digitos do cpf.");
 					continue;
 				}
-			}
-			break;
+			} break;
 		}
 	}
 	

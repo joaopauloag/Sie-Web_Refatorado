@@ -104,29 +104,26 @@ public class Coordenador extends Usuario {
 		if(qtdDisciplinas == 0) {
 			System.out.println("\nVoce ainda nao possui uma turma.");
 			return;
-		}
-		System.out.println("\nSuas turmas:");
+		} System.out.println("\nSuas turmas:");
 		for(int i = 0; i < 4; i++) {
 			if(disciplinas[i] != null) {
 				System.out.println(disciplinas[i]);
 			}
-		}
-		System.out.print("\nEscolha uma turma: ");
+		} System.out.print("\nEscolha uma turma: ");
 		disciplina = entrada.nextLine();
 		for(int i = 0; i < 4; i++) {
-			if(disciplinas[i] != null) {
-				if(disciplina.equalsIgnoreCase(disciplinas[i]) && j == 1) {
-					Sistema.lancarNota(disciplina);
-					return;
-				}
-				if(disciplina.equalsIgnoreCase(disciplinas[i]) && j == 2) {
-					Sistema.lancarFrequencia(disciplina);
-					return;
-				}
+			if(disciplinas[i] == null) {
+				continue;
+			}
+			if(disciplina.equalsIgnoreCase(disciplinas[i]) && j == 1) {
+				Sistema.lancarNota(disciplina);
+				return;
+			} else if(disciplina.equalsIgnoreCase(disciplinas[i]) && j == 2) {
+				Sistema.lancarFrequencia(disciplina);
+				return;
 			}
 		}
 		System.out.println("\nTurma nao encontrada!");
-		return;
 	}
 	
 }

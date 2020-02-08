@@ -44,28 +44,25 @@ public class Sistema {
 				} catch(NumberFormatException e) {
 					System.out.println("\nEntrada invalida!");
 					continue;
-				}
-				break;
+				} break;
 			}
-			
-			if(opcao == 1 || opcao == 2) {
-				procurarUsuario();
-			} else if(opcao == 3) {
-				if(procurarCoordenador()) {
-					novoUsuario = new Coordenador();
-					novoUsuario.criarConta();
-					usuarios.add(novoUsuario);
-				} else {
-					System.out.println("\nO coordenador ja esta cadastrado!");
-					continue;
-				}
-			} else if(opcao == 0) {
+			if(opcao == 0) {
 				return;
+			} else if(opcao == 1 || opcao == 2) {
+				procurarUsuario();
+				break;
+			} else if(opcao == 3 && procurarCoordenador()) {
+				novoUsuario = new Coordenador();
+				novoUsuario.criarConta();
+				usuarios.add(novoUsuario);
+				break;
+			} else if(opcao == 3 && !procurarCoordenador()) {
+				System.out.println("\nO coordenador ja esta cadastrado!");
+				continue;
 			} else {
 				System.out.println("\nOpcao invalida!");
 				continue;
 			}
-			break;
 		}
 	}
 	
@@ -78,17 +75,18 @@ public class Sistema {
 		email = entrada.nextLine();
 		
 		for (Usuario u : usuarios) {
-			if(u.getEmail().equals(email)) {
-				if(u.getSenha() != null) {
-					System.out.println("\nEste usuario ja existe!");
-					return;
-				}
-				u.criarConta();
-				if(u instanceof Aluno) {
-					((Aluno) u).setMatricula(gerarMatricula());
-				}
+			if(! u.getEmail().equals(email)) {
+				continue;
+			}
+			if(u.getSenha() != null) {
+				System.out.println("\nEste usuario ja existe!");
 				return;
 			}
+			u.criarConta();
+			if(u instanceof Aluno) {
+				((Aluno) u).setMatricula(gerarMatricula());
+			}
+			return;
 		}
 		System.out.println("\nSeu acesso ainda nao foi concedido!");
 	}
@@ -155,7 +153,7 @@ public class Sistema {
 	
 	public static void criarNovaTurma() {
 		
-		String nome;
+		String nome = null;
 		boolean encontrouProfessor = false;
 		Disciplina novaDisciplina = new Disciplina();
 		entrada = new Scanner(System.in);
@@ -181,32 +179,40 @@ public class Sistema {
 				System.out.println("\nNao ha professores disponiveis. A turma nao pode ser criada!");
 				return;
 			}
-			System.out.print("\nEscolha o professor: ");
-			nome = entrada.nextLine();
-			for(Usuario u : usuarios) {
-				if(u instanceof Professor) {
-					if(u.getNome() == null) continue;
-					if(u.getNome().equals(nome)) {
-						novaDisciplina.setNomeProfessor(nome);
-						((Professor) u).setQtdDisciplinas(((Professor) u).getQtdDisciplinas() + 1);
-						((Professor) u).setDisciplina(novaDisciplina.getNomeDisciplina());
-						disciplinas.add(novaDisciplina);
-						System.out.println("\nTurma criada!");
-						return; 
-					}
-				} else if(u instanceof Coordenador) {
-					if(u.getNome().equals(nome)) {
-						novaDisciplina.setNomeProfessor(nome);
-						((Coordenador) u).setQtdDisciplinas(((Coordenador) u).getQtdDisciplinas() + 1);
-						((Coordenador) u).setDisciplina(novaDisciplina.getNomeDisciplina());
-						disciplinas.add(novaDisciplina);
-						System.out.println("\nTurma criada!");
-						return;
-					}
+			if(alocarProfessor(novaDisciplina, nome)) {
+				return;
+			}
+		}
+	}
+	
+	private static boolean alocarProfessor(Disciplina novaDisciplina, String nome) {
+	
+		System.out.print("\nEscolha o professor: ");
+		nome = entrada.nextLine();
+		for(Usuario u : usuarios) {
+			if(u instanceof Professor) {
+				if(u.getNome() == null) continue;
+				if(u.getNome().equals(nome)) {
+					novaDisciplina.setNomeProfessor(nome);
+					((Professor) u).setQtdDisciplinas(((Professor) u).getQtdDisciplinas() + 1);
+					((Professor) u).setDisciplina(novaDisciplina.getNomeDisciplina());
+					disciplinas.add(novaDisciplina);
+					System.out.println("\nTurma criada!");
+					return true; 
+				}
+			} else if(u instanceof Coordenador) {
+				if(u.getNome().equals(nome)) {
+					novaDisciplina.setNomeProfessor(nome);
+					((Coordenador) u).setQtdDisciplinas(((Coordenador) u).getQtdDisciplinas() + 1);
+					((Coordenador) u).setDisciplina(novaDisciplina.getNomeDisciplina());
+					disciplinas.add(novaDisciplina);
+					System.out.println("\nTurma criada!");
+					return true;
 				}
 			}
-			System.out.print("\nProfessor nao encontrado!");
 		}
+		System.out.print("\nProfessor nao encontrado!");
+		return false;
 	}
 	
 	public static void adicionarUsuarioAoSistema() {
@@ -218,17 +224,12 @@ public class Sistema {
 	public static void abrirEncerrarMatricula() {
 		
 		entrada = new Scanner(System.in);
-		
 		System.out.print("\nStatus de matricula: ");
 		System.out.println((ePeriodoDeMatricula)?  "Aberto" : "Fechado");
 		System.out.print("\n(S) para mudar status, qualquer outra tecla para manter: ");
 		
 		if(entrada.next().equalsIgnoreCase("s")) {
-			if(ePeriodoDeMatricula) {
-				ePeriodoDeMatricula = false;
-			} else {
-				ePeriodoDeMatricula = true;
-			}
+			ePeriodoDeMatricula = (ePeriodoDeMatricula)? false : true;
 		}
 		System.out.print("\nStatus de matricula: ");
 		System.out.println((ePeriodoDeMatricula)?  "Aberto" : "Fechado");
@@ -239,17 +240,18 @@ public class Sistema {
 		int i;
 		
 		for(Disciplina d : disciplinas) {
-			if(d.getSolicitacoes() != null) {
-				ArrayList<Integer> solicitacoes = d.getSolicitacoes();
-				System.out.println("\n\n\nDisciplina: " + d.getNomeDisciplina());
-				for (i = 0; i < solicitacoes.size(); i++) {
-					avaliarSolicitacao(solicitacoes.get(i), d);
-					solicitacoes.remove(i);
-					i--;
-				}
-				if(i == 0) {
-					System.out.println("\nNenhuma solicitacao.");
-				}
+			if(d.getSolicitacoes() == null) {
+				continue;
+			}
+			ArrayList<Integer> solicitacoes = d.getSolicitacoes();
+			System.out.println("\n\n\nDisciplina: " + d.getNomeDisciplina());
+			for (i = 0; i < solicitacoes.size(); i++) {
+				avaliarSolicitacao(solicitacoes.get(i), d);
+				solicitacoes.remove(i);
+				i--;
+			}
+			if(i == 0) {
+				System.out.println("\nNenhuma solicitacao.");
 			}
 		}
 	}
@@ -259,24 +261,26 @@ public class Sistema {
 		entrada = new Scanner(System.in);
 		
 		for(Usuario u : usuarios) {
-			if(u instanceof Aluno) {
-				if(((Aluno) u).getMatricula() == i) {
-					System.out.println("\nAluno: " + u.getNome());
-					System.out.print("(S) para aceitar, qualquer outra tecla para recusar: ");
-					if(entrada.next().equalsIgnoreCase("s")) {
-						if(d.alunosMatriculadosCheio()) {
-							System.out.println("\nA turma ja esta lotada!\n");
-							return;
-						}
-						((Aluno) u).setQtdDisciplina(((Aluno) u).getQtdDisciplina() + 1);
-						d.setAlunosMatriculados(((Aluno) u).getMatricula());
-						System.out.println("\nPedido aceito.\n");
-						return;
-					}
-					System.out.println("\nPedido recusado.\n");
-					return;
-				}
+			if(!(u instanceof Aluno)) {
+				continue;
 			}
+			if(((Aluno) u).getMatricula() != i) {
+				continue;
+			}	
+			System.out.println("\nAluno: " + u.getNome());
+			System.out.print("(S) para aceitar, qualquer outra tecla para recusar: ");
+			if(! entrada.next().equalsIgnoreCase("s")) {
+				System.out.println("\nPedido recusado.\n");
+				return;
+			}
+			if(d.alunosMatriculadosCheio()) {
+				System.out.println("\nA turma ja esta lotada!\n");
+				return;
+			}
+			((Aluno) u).setQtdDisciplina(((Aluno) u).getQtdDisciplina() + 1);
+			d.setAlunosMatriculados(((Aluno) u).getMatricula());
+			System.out.println("\nPedido aceito.\n");
+			return;
 		}
 	}
 	
@@ -412,15 +416,16 @@ public class Sistema {
 
 		for(Disciplina d : disciplinas) {
 			for(int i = 0; i < d.getAlunosMatriculados().length; i++) {
-				if(d.getAluno(i) == matricula) {
-					System.out.print(d.getNotaAluno(i, 1) + "\t");
-					System.out.print(d.getNotaAluno(i, 2) + "\t");
-					System.out.print(d.getNotaAluno(i, 3) + "\t");
-					System.out.print(d.getNotaAluno(i, 0) + "\t");
-					System.out.print(d.getFaltaAluno(i) + "\t");
-					System.out.println(d.getNomeDisciplina());
-					break;
+				if(d.getAluno(i) != matricula) {
+					continue;
 				}
+				System.out.print(d.getNotaAluno(i, 1) + "\t");
+				System.out.print(d.getNotaAluno(i, 2) + "\t");
+				System.out.print(d.getNotaAluno(i, 3) + "\t");
+				System.out.print(d.getNotaAluno(i, 0) + "\t");
+				System.out.print(d.getFaltaAluno(i) + "\t");
+				System.out.println(d.getNomeDisciplina());
+				break;
 			}
 		}
 	}
@@ -435,11 +440,12 @@ public class Sistema {
 			alunosMatriculados = d.getAlunosMatriculados();
 			for(int i = 0; i < alunosMatriculados.length; ++i) {
 				for(Usuario u : usuarios) {
-					if(u instanceof Aluno) {
-						if(((Aluno) u).getMatricula() == alunosMatriculados[i]) {
-							if(u.getNome() != null)
-							System.out.println(u.getNome());
-						}
+					if(!(u instanceof Aluno)) {
+						continue;
+					} else if(((Aluno) u).getMatricula() != alunosMatriculados[i]) {
+						continue;
+					} else if(u.getNome() != null) {
+						System.out.println(u.getNome());
 					}
 				}
 			}
