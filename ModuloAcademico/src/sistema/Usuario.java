@@ -64,7 +64,7 @@ public abstract class Usuario {
 	}
 	
 	
-	public void criarPerfil() {
+	final public void criarPerfil() {
 		
 		String confirmaSenha;
 		entrada = new Scanner(System.in);
@@ -102,7 +102,7 @@ public abstract class Usuario {
 		}
 	}
 	
-	public void alterarSenha() {
+	final public void alterarSenha() {
 		
 		String confirmaSenha;
 		entrada = new Scanner(System.in);
